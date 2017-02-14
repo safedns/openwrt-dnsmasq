@@ -47,8 +47,8 @@
 #define TFTP_MAX_CONNECTIONS 50 /* max simultaneous connections */
 #define LOG_MAX 5 /* log-queue length */
 #define RANDFILE "/dev/urandom"
-#define DNSMASQ_SERVICE "uk.org.thekelleys.dnsmasq" /* Default - may be overridden by config */
-#define DNSMASQ_PATH "/uk/org/thekelleys/dnsmasq"
+#define DNSMASQ_SERVICE "uk.org.thekelleys.my_dnsmasq" /* Default - may be overridden by config */
+#define DNSMASQ_PATH "/uk/org/thekelleys/my_dnsmasq"
 #define AUTH_TTL 600 /* default TTL for auth DNS */
 #define SOA_REFRESH 1200 /* SOA refresh default */
 #define SOA_RETRY 180 /* SOA retry default */
@@ -185,21 +185,21 @@ RESOLVFILE
 
 #ifndef LEASEFILE
 #   if defined(__FreeBSD__) || defined (__OpenBSD__) || defined(__DragonFly__) || defined(__NetBSD__)
-#      define LEASEFILE "/var/db/dnsmasq.leases"
+#      define LEASEFILE "/var/db/my_dnsmasq.leases"
 #   elif defined(__sun__) || defined (__sun)
-#      define LEASEFILE "/var/cache/dnsmasq.leases"
+#      define LEASEFILE "/var/cache/my_dnsmasq.leases"
 #   elif defined(__ANDROID__)
-#      define LEASEFILE "/data/misc/dhcp/dnsmasq.leases"
+#      define LEASEFILE "/data/misc/dhcp/my_dnsmasq.leases"
 #   else
-#      define LEASEFILE "/var/lib/misc/dnsmasq.leases"
+#      define LEASEFILE "/var/lib/misc/my_dnsmasq.leases"
 #   endif
 #endif
 
 #ifndef CONFFILE
 #   if defined(__FreeBSD__)
-#      define CONFFILE "/usr/local/etc/dnsmasq.conf"
+#      define CONFFILE "/usr/local/etc/my_dnsmasq.conf"
 #   else
-#      define CONFFILE "/etc/dnsmasq.conf"
+#      define CONFFILE "/etc/my_dnsmasq.conf"
 #   endif
 #endif
 
@@ -213,9 +213,9 @@ RESOLVFILE
 
 #ifndef RUNFILE
 #   if defined(__ANDROID__)
-#      define RUNFILE "/data/dnsmasq.pid"
+#      define RUNFILE "/data/my_dnsmasq.pid"
 #    else
-#      define RUNFILE "/var/run/dnsmasq.pid"
+#      define RUNFILE "/var/run/my_dnsmasq.pid"
 #    endif
 #endif
 

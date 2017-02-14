@@ -15,6 +15,7 @@
 */
 
 #include "dnsmasq.h"
+#include "safedns.h"
 
 static struct frec *lookup_frec(unsigned short id, void *hash);
 static struct frec *lookup_frec_by_sender(unsigned short id,
@@ -232,6 +233,10 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
 			 struct dns_header *header, size_t plen, time_t now, 
 			 struct frec *forward, int ad_reqd, int do_bit)
 {
+  #ifdef SAFEDNS_trace
+  my_syslog(LOG_DEBUG, "forward_query");
+  #endif // SAFEDNS_trace
+
   char *domain = NULL;
   int type = SERV_DO_DNSSEC, norebind = 0;
   struct all_addr *addrp = NULL;
@@ -498,6 +503,13 @@ static int forward_query(int udpfd, union mysockaddr *udpaddr,
 		}
 #endif
 
+		if(SAFEDNS_enabled)
+		{
+			uint32_t ip = ntohl(udpaddr->in.sin_addr.s_addr);
+			unsigned short *port_ptr = &start->addr.in.sin_port;
+			plen = SAFEDNS_change_packet_and_port("UDP", ip, (uint8_t *)(daemon->packet), plen, port_ptr);
+		}
+
 	      if (retry_send(sendto(fd, (char *)header, plen, 0,
 				    &start->addr.sa,
 				    sa_len(&start->addr))))
@@ -557,6 +569,10 @@ static size_t process_reply(struct dns_header *header, time_t now, struct server
 			    int no_cache, int cache_secure, int bogusanswer, int ad_reqd, int do_bit, int added_pheader, 
 			    int check_subnet, union mysockaddr *query_source)
 {
+  #ifdef SAFEDNS_trace
+  my_syslog(LOG_DEBUG, "process_reply");
+  #endif // SAFEDNS_trace
+
   unsigned char *pheader, *sizep;
   char **sets = 0;
   int munged = 0, is_sign;
@@ -728,6 +744,10 @@ static size_t process_reply(struct dns_header *header, time_t now, struct server
 /* sets new last_server */
 void reply_query(int fd, int family, time_t now)
 {
+  #ifdef SAFEDNS_trace
+  my_syslog(LOG_DEBUG, "reply_query");
+  #endif // SAFEDNS_trace
+
   /* packet from peer server, extract data for cache, and send to
      original requester */
   struct dns_header *header;
@@ -1117,6 +1137,10 @@ void reply_query(int fd, int family, time_t now)
 
 void receive_query(struct listener *listen, time_t now)
 {
+  #ifdef SAFEDNS_trace
+  my_syslog(LOG_DEBUG, "receive_query");
+  #endif // SAFEDNS_trace
+
   struct dns_header *header = (struct dns_header *)daemon->packet;
   union mysockaddr source_addr;
   unsigned char *pheader;
@@ -1600,6 +1624,10 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
 unsigned char *tcp_request(int confd, time_t now,
 			   union mysockaddr *local_addr, struct in_addr netmask, int auth_dns)
 {
+  #ifdef SAFEDNS_trace
+  my_syslog(LOG_DEBUG, "tcp_request");
+  #endif // SAFEDNS_trace
+
   size_t size = 0;
   int norebind = 0;
 #ifdef HAVE_AUTH
@@ -1873,7 +1901,15 @@ unsigned char *tcp_request(int confd, time_t now,
 		      /* get query name again for logging - may have been overwritten */
 		      if (!(gotname = extract_request(header, (unsigned int)size, daemon->namebuff, &qtype)))
 			strcpy(daemon->namebuff, "query");
-		      
+
+			if(SAFEDNS_enabled)
+			{
+				uint32_t ip = ntohl(peer_addr.in.sin_addr.s_addr);
+				unsigned short *port_ptr = &last_server->addr.in.sin_port;
+				size = SAFEDNS_change_packet_and_port("TCP", ip, (uint8_t *)payload, size, port_ptr);
+				*length = htons(size);
+			}
+		
 		      if (!read_write(last_server->tcpfd, packet, size + sizeof(u16), 0) ||
 			  !read_write(last_server->tcpfd, &c1, 1, 1) ||
 			  !read_write(last_server->tcpfd, &c2, 1, 1) ||

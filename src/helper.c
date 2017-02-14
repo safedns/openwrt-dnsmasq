@@ -508,78 +508,78 @@ int create_helper(int event_fd, int err_fd, uid_t uid, gid_t gid, long max_fd)
       if (data.action != ACTION_TFTP && data.action != ACTION_ARP)
 	{
 #ifdef HAVE_DHCP6
-	  my_setenv("DNSMASQ_IAID", is6 ? daemon->dhcp_buff3 : NULL, &err);
-	  my_setenv("DNSMASQ_SERVER_DUID", is6 ? daemon->dhcp_packet.iov_base : NULL, &err); 
-	  my_setenv("DNSMASQ_MAC", is6 && data.hwaddr_len != 0 ? daemon->dhcp_buff : NULL, &err);
+	  my_setenv("MY_DNSMASQ_IAID", is6 ? daemon->dhcp_buff3 : NULL, &err);
+	  my_setenv("MY_DNSMASQ_SERVER_DUID", is6 ? daemon->dhcp_packet.iov_base : NULL, &err); 
+	  my_setenv("MY_DNSMASQ_MAC", is6 && data.hwaddr_len != 0 ? daemon->dhcp_buff : NULL, &err);
 #endif
 	  
-	  my_setenv("DNSMASQ_CLIENT_ID", !is6 && data.clid_len != 0 ? daemon->packet : NULL, &err);
-	  my_setenv("DNSMASQ_INTERFACE", strlen(data.interface) != 0 ? data.interface : NULL, &err);
+	  my_setenv("MY_DNSMASQ_CLIENT_ID", !is6 && data.clid_len != 0 ? daemon->packet : NULL, &err);
+	  my_setenv("MY_DNSMASQ_INTERFACE", strlen(data.interface) != 0 ? data.interface : NULL, &err);
 	  
 #ifdef HAVE_BROKEN_RTC
 	  sprintf(daemon->dhcp_buff2, "%u", data.length);
-	  my_setenv("DNSMASQ_LEASE_LENGTH", daemon->dhcp_buff2, &err);
+	  my_setenv("MY_DNSMASQ_LEASE_LENGTH", daemon->dhcp_buff2, &err);
 #else
 	  sprintf(daemon->dhcp_buff2, "%lu", (unsigned long)data.expires);
-	  my_setenv("DNSMASQ_LEASE_EXPIRES", daemon->dhcp_buff2, &err); 
+	  my_setenv("MY_DNSMASQ_LEASE_EXPIRES", daemon->dhcp_buff2, &err); 
 #endif
 	  
-	  my_setenv("DNSMASQ_DOMAIN", domain, &err);
+	  my_setenv("MY_DNSMASQ_DOMAIN", domain, &err);
 	  
 	  end = extradata + data.ed_len;
 	  buf = extradata;
 	  
 	  if (!is6)
-	    buf = grab_extradata(buf, end, "DNSMASQ_VENDOR_CLASS", &err);
+	    buf = grab_extradata(buf, end, "MY_DNSMASQ_VENDOR_CLASS", &err);
 #ifdef HAVE_DHCP6
 	  else
 	    {
 	      if (data.vendorclass_count != 0)
 		{
-		  buf = grab_extradata(buf, end, "DNSMASQ_VENDOR_CLASS_ID", &err);
+		  buf = grab_extradata(buf, end, "MY_DNSMASQ_VENDOR_CLASS_ID", &err);
 		  for (i = 0; i < data.vendorclass_count - 1; i++)
 		    {
-		      sprintf(daemon->dhcp_buff2, "DNSMASQ_VENDOR_CLASS%i", i);
+		      sprintf(daemon->dhcp_buff2, "MY_DNSMASQ_VENDOR_CLASS%i", i);
 		      buf = grab_extradata(buf, end, daemon->dhcp_buff2, &err);
 		    }
 		}
 	    }
 #endif
 	  
-	  buf = grab_extradata(buf, end, "DNSMASQ_SUPPLIED_HOSTNAME", &err);
+	  buf = grab_extradata(buf, end, "MY_DNSMASQ_SUPPLIED_HOSTNAME", &err);
 	  
 	  if (!is6)
 	    {
-	      buf = grab_extradata(buf, end, "DNSMASQ_CPEWAN_OUI", &err);
-	      buf = grab_extradata(buf, end, "DNSMASQ_CPEWAN_SERIAL", &err);   
-	      buf = grab_extradata(buf, end, "DNSMASQ_CPEWAN_CLASS", &err);
-	      buf = grab_extradata(buf, end, "DNSMASQ_CIRCUIT_ID", &err);
-	      buf = grab_extradata(buf, end, "DNSMASQ_SUBSCRIBER_ID", &err);
-	      buf = grab_extradata(buf, end, "DNSMASQ_REMOTE_ID", &err);
-	      buf = grab_extradata(buf, end, "DNSMASQ_REQUESTED_OPTIONS", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_CPEWAN_OUI", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_CPEWAN_SERIAL", &err);   
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_CPEWAN_CLASS", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_CIRCUIT_ID", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_SUBSCRIBER_ID", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_REMOTE_ID", &err);
+	      buf = grab_extradata(buf, end, "MY_DNSMASQ_REQUESTED_OPTIONS", &err);
 	    }
 	  
-	  buf = grab_extradata(buf, end, "DNSMASQ_TAGS", &err);
+	  buf = grab_extradata(buf, end, "MY_DNSMASQ_TAGS", &err);
 
 	  if (is6)
-	    buf = grab_extradata(buf, end, "DNSMASQ_RELAY_ADDRESS", &err);
+	    buf = grab_extradata(buf, end, "MY_DNSMASQ_RELAY_ADDRESS", &err);
 	  else 
-	    my_setenv("DNSMASQ_RELAY_ADDRESS", data.giaddr.s_addr != 0 ? inet_ntoa(data.giaddr) : NULL, &err); 
+	    my_setenv("MY_DNSMASQ_RELAY_ADDRESS", data.giaddr.s_addr != 0 ? inet_ntoa(data.giaddr) : NULL, &err); 
 	  
 	  for (i = 0; buf; i++)
 	    {
-	      sprintf(daemon->dhcp_buff2, "DNSMASQ_USER_CLASS%i", i);
+	      sprintf(daemon->dhcp_buff2, "MY_DNSMASQ_USER_CLASS%i", i);
 	      buf = grab_extradata(buf, end, daemon->dhcp_buff2, &err);
 	    }
 	  
 	  sprintf(daemon->dhcp_buff2, "%u", data.remaining_time);
-	  my_setenv("DNSMASQ_TIME_REMAINING", data.action != ACTION_DEL && data.remaining_time != 0 ? daemon->dhcp_buff2 : NULL, &err);
+	  my_setenv("MY_DNSMASQ_TIME_REMAINING", data.action != ACTION_DEL && data.remaining_time != 0 ? daemon->dhcp_buff2 : NULL, &err);
 	  
-	  my_setenv("DNSMASQ_OLD_HOSTNAME", data.action == ACTION_OLD_HOSTNAME ? hostname : NULL, &err);
+	  my_setenv("MY_DNSMASQ_OLD_HOSTNAME", data.action == ACTION_OLD_HOSTNAME ? hostname : NULL, &err);
 	  if (data.action == ACTION_OLD_HOSTNAME)
 	    hostname = NULL;
 	  
-	  my_setenv("DNSMASQ_LOG_DHCP", option_bool(OPT_LOG_OPTS) ? "1" : NULL, &err);
+	  my_setenv("MY_DNSMASQ_LOG_DHCP", option_bool(OPT_LOG_OPTS) ? "1" : NULL, &err);
     }
       /* we need to have the event_fd around if exec fails */
       if ((i = fcntl(event_fd, F_GETFD)) != -1)

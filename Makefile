@@ -28,7 +28,7 @@ CFLAGS        = -Wall -W -O2
 LDFLAGS       = 
 COPTS         = 
 RPM_OPT_FLAGS = 
-LIBS          = 
+LIBS          = -luci
 
 #################################################################
 
@@ -74,10 +74,13 @@ objs = cache.o rfc1035.o util.o option.o forward.o network.o \
        helper.o tftp.o log.o conntrack.o dhcp6.o rfc3315.o \
        dhcp-common.o outpacket.o radv.o slaac.o auth.o ipset.o \
        domain.o dnssec.o blockdata.o tables.o loop.o inotify.o \
-       poll.o rrfilter.o edns0.o arp.o
+       poll.o rrfilter.o edns0.o arp.o safedns.o
 
 hdrs = dnsmasq.h config.h dhcp-protocol.h dhcp6-protocol.h \
-       dns-protocol.h radv-protocol.h ip6addr.h
+       dns-protocol.h radv-protocol.h ip6addr.h safedns.h
+
+compile: all
+	echo -@-@-@-@-@-@-@-@-@- my compile target -@-@-@-@-@-@-@-@-@-
 
 all : $(BUILDDIR)
 	@cd $(BUILDDIR) && $(MAKE) \
@@ -95,7 +98,11 @@ clean : mostly_clean
 	rm -f core */core
 	rm -f *~ contrib/*/*~ */*~
 
-install : all install-common
+#install : all install-common
+install: all
+	echo -@-@-@-@-@-@-@-@-@- my install target -@-@-@-@-@-@-@-@-@-
+	$(INSTALL) -d                 $(DESTDIR)/usr/local/sbin
+	$(INSTALL) -m 755 src/dnsmasq $(DESTDIR)/usr/local/sbin/my_dnsmasq
 
 install-common :
 	$(INSTALL) -d $(DESTDIR)$(BINDIR) -d $(DESTDIR)$(MANDIR)/man8

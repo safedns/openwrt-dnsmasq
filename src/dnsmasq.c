@@ -18,6 +18,7 @@
 #define DNSMASQ_COMPILE_OPTS
 
 #include "dnsmasq.h"
+#include "safedns.h"
 
 struct daemon *daemon;
 
@@ -34,6 +35,10 @@ static void poll_resolv(int force, int do_reload, time_t now);
 
 int main (int argc, char **argv)
 {
+  #ifdef SAFEDNS_log
+  my_syslog(LOG_INFO, "==========  start  ==========");
+  endif // SAFEDNS_log
+
   int bind_fallback = 0;
   time_t now;
   struct sigaction sigact;
@@ -64,8 +69,8 @@ int main (int argc, char **argv)
 
 #ifdef LOCALEDIR
   setlocale(LC_ALL, "");
-  bindtextdomain("dnsmasq", LOCALEDIR); 
-  textdomain("dnsmasq");
+  bindtextdomain("my_dnsmasq", LOCALEDIR); 
+  textdomain("my_dnsmasq");
 #endif
 
   sigact.sa_handler = sig_handler;
@@ -1038,8 +1043,16 @@ int main (int argc, char **argv)
 	}
       check_dbus_listeners();
 #endif
+
+      #ifdef SAFEDNS_trace
+      my_syslog(LOG_DEBUG, "/---- check_dns_listeners (before) ----\\");
+      #endif // SAFEDNS_trace
       
       check_dns_listeners(now);
+
+      #ifdef SAFEDNS_trace
+      my_syslog(LOG_DEBUG, "\\____ check_dns_listeners (after)  ____/");
+      #endif // SAFEDNS_trace
 
 #ifdef HAVE_TFTP
       check_tftp_listeners(now);

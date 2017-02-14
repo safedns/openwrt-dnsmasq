@@ -4817,7 +4817,7 @@ void read_opts(int argc, char **argv, char *compile_opts)
 
   if (testmode)
     {
-      fprintf(stderr, "dnsmasq: %s.\n", _("syntax check OK"));
+      fprintf(stderr, "my_dnsmasq: %s.\n", _("syntax check OK"));
       exit(0);
     }
 }  
